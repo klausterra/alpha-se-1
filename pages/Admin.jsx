@@ -133,6 +133,10 @@ export default function Admin() {
         updateData.status = 'rejected';
       } else if (action === 'highlight') {
         updateData.destacado = value;
+      } else if (action === 'delete') {
+        await Anuncio.delete(adId);
+        await loadData();
+        return;
       }
 
       await Anuncio.update(adId, updateData);

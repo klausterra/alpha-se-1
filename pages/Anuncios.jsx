@@ -1,9 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Anuncio } from "@/api/entities";
-import { User } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,60 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Filter, Star, Eye, User as UserIconType, ExternalLink, ChevronDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import LoginPrompt from "../components/LoginPrompt";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import LoginForm from "@/components/auth/LoginForm";
 import { getPublicAnuncios } from "@/api/functions";
-
-const categories = {
-  imoveis: ["venda_casa", "venda_apto", "venda_lote", "aluguel_casa", "aluguel_apto", "aluguel_lote"],
-  veiculos: ["carros", "motos", "outros_veiculos"],
-  para_casa: ["moveis", "eletrodomesticos", "decoracao"],
-  servicos: ["reformas_reparos", "aulas_cursos", "saude_bem_estar", "eventos", "outros_servicos"],
-  eletronicos: ["celulares", "computadores", "outros_eletronicos"],
-  moda_beleza: ["roupas", "acessorios", "cosmeticos"],
-  bebes_criancas: ["roupas_bebes", "brinquedos", "carrinhos_bebe", "moveis_infantis", "livros_infantis", "artigos_bebe"]
-};
-
-const categoryLabels = {
-    imoveis: "Imóveis",
-    veiculos: "Veículos",
-    para_casa: "Para sua Casa",
-    servicos: "Serviços",
-    eletronicos: "Eletrônicos",
-    moda_beleza: "Moda e Beleza",
-    bebes_criancas: "Bebês e Crianças"
-};
-
-const subcategoryLabels = {
-    venda_casa: "Venda - Casa",
-    venda_apto: "Venda - Apartamento",
-    venda_lote: "Venda - Lote",
-    aluguel_casa: "Aluguel - Casa",
-    aluguel_apto: "Aluguel - Apartamento",
-    aluguel_lote: "Aluguel - Lote",
-    carros: "Carros",
-    motos: "Motos",
-    outros_veiculos: "Outros Veículos",
-    moveis: "Móveis",
-    eletrodomesticos: "Eletrodomésticos",
-    decoracao: "Decoração",
-    reformas_reparos: "Reformas e Reparos",
-    aulas_cursos: "Aulas e Cursos",
-    saude_bem_estar: "Saúde e Bem-estar",
-    eventos: "Eventos",
-    outros_servicos: "Outros Serviços",
-    celulares: "Celulares",
-    computadores: "Computadores",
-    outros_eletronicos: "Outros Eletrônicos",
-    roupas: "Roupas",
-    acessorios: "Acessórios",
-    cosmeticos: "Cosméticos",
-    roupas_bebes: "Roupas de Bebê",
-    brinquedos: "Brinquedos",
-    carrinhos_bebe: "Carrinhos de Bebê",
-    moveis_infantis: "Móveis Infantis",
-    livros_infantis: "Livros Infantis",
-    artigos_bebe: "Artigos para Bebê"
-};
+import { categories, categoryLabels, subcategoryLabels } from "@/components/anuncios/AnuncioCategories";
 
 export default function Anuncios({ user, userLoading }) {
   const [anuncios, setAnuncios] = useState([]);
@@ -77,15 +24,15 @@ export default function Anuncios({ user, userLoading }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
-    // Carrega dados independente do usuário para tornar a página mais acessível
     loadAnunciosData();
   }, []);
 
   useEffect(() => {
-    let filtered = anuncios;
+    let filtered = [...anuncios];
 
     if (selectedCategory !== "all") {
       filtered = filtered.filter(ad => ad.categoria === selectedCategory);
+
       if (selectedSubcategory !== "all") {
         filtered = filtered.filter(ad => ad.subcategoria === selectedSubcategory);
       }
@@ -119,23 +66,16 @@ export default function Anuncios({ user, userLoading }) {
   const loadAnunciosData = async () => {
     setDataLoading(true);
     try {
-      // Tentar usar a função de backend primeiro
-      try {
-        const { data: anunciosData } = await getPublicAnuncios();
-        if (anunciosData && Array.isArray(anunciosData)) {
-          setAnuncios(anunciosData);
-        } else {
-          throw new Error("Dados inválidos do backend");
-        }
-      } catch (backendError) {
-        console.log("Erro na função backend, tentando acesso direto:", backendError);
-        // Fallback: tentar acesso direto se o usuário estiver logado
-        const anunciosData = await Anuncio.filter({ status: "active" }, "-created_date");
-        setAnuncios(anunciosData || []);
+      const { data: anunciosData } = await getPublicAnuncios();
+      if (anunciosData && Array.isArray(anunciosData)) {
+        setAnuncios(anunciosData);
+      } else {
+        console.error("Dados inválidos do backend");
+        setAnuncios([]);
       }
     } catch (error) {
       console.error("Erro ao carregar dados dos anúncios:", error);
-      setAnuncios([]); // Define como array vazio em caso de erro
+      setAnuncios([]);
     } finally {
       setDataLoading(false);
     }
@@ -143,7 +83,7 @@ export default function Anuncios({ user, userLoading }) {
 
   const getUserTypeBadge = (anuncio) => {
     const userType = anuncio.user_type;
-    
+
     switch (userType) {
       case 'morador':
         return (
@@ -196,7 +136,6 @@ export default function Anuncios({ user, userLoading }) {
     setSelectedSubcategory("all");
   };
 
-  // Loading state
   if (userLoading || dataLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -205,7 +144,6 @@ export default function Anuncios({ user, userLoading }) {
             <Skeleton className="h-10 w-64 mb-4" />
             <Skeleton className="h-6 w-96" />
           </div>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array(9).fill(0).map((_, i) => (
               <Card key={i} className="overflow-hidden">
@@ -226,20 +164,18 @@ export default function Anuncios({ user, userLoading }) {
     );
   }
 
-  // Se não há usuário logado, mostrar prompt de login
-  if (!user) {
-    return <LoginPrompt />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Anúncios
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Anúncios</h1>
           <p className="text-sm text-gray-600">
             Explore produtos e serviços da comunidade.
+            {!user && (
+              <span className="text-green-600 font-medium ml-1">
+                Faça login para entrar em contato com os anunciantes.
+              </span>
+            )}
           </p>
         </div>
 
@@ -259,13 +195,11 @@ export default function Anuncios({ user, userLoading }) {
             <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform md:hidden ${filtersOpen ? 'rotate-180' : ''}`} />
           </div>
 
-          <div className={`border-t ${filtersOpen ? 'block' : 'hidden'} md:block`}>
+          <div className={`border-t ${filtersOpen || (typeof window !== 'undefined' && window.innerWidth >= 768) ? 'block' : 'hidden'} md:block`}>
             <div className="p-4 grid gap-3 md:grid-cols-3 md:gap-4">
               <div className="relative md:col-span-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
-                  id="searchAnuncios"
-                  name="searchAnuncios"
                   placeholder="Buscar anúncios..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -317,94 +251,61 @@ export default function Anuncios({ user, userLoading }) {
                   : 'Seja o primeiro a anunciar na plataforma.'
               }
             </p>
-            <Link to={createPageUrl("CriarAnuncio")}>
-              <Button> {/* Removed explicit bg-green-600 as Button component handles defaults */}
-                Criar Primeiro Anúncio
-              </Button>
-            </Link>
           </div>
         ) : (
-          <>
-            <p className="text-gray-600 mb-4">
-              {filteredAnuncios.length} anúncio{filteredAnuncios.length !== 1 ? 's' : ''} encontrado{filteredAnuncios.length !== 1 ? 's' : ''}
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {filteredAnuncios.map((anuncio, index) => (
-                <motion.div
-                  key={anuncio.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    {anuncio.destacado && (
-                      <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 px-3 py-1">
-                        <div className="flex items-center justify-center text-white text-sm font-medium">
-                          <Star className="w-4 h-4 mr-1" />
-                          Destaque
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                      {anuncio.imagens?.[0] ? (
-                        <img
-                          src={anuncio.imagens[0]}
-                          alt={anuncio.titulo}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-green-50">
-                          <img 
-                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/7bcb2cd18_Alphase.png"
-                            alt="Alpha-se"
-                            className="w-16 h-16 opacity-60"
-                          />
-                        </div>
-                      )}
-                      <div className="absolute top-3 left-3">
-                        <Badge className={`${getCategoryColor(anuncio.categoria)} text-xs`}>
-                          {subcategoryLabels[anuncio.subcategoria] || categoryLabels[anuncio.categoria]}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-3 right-3">
-                        {getUserTypeBadge(anuncio)}
-                      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {filteredAnuncios.map((anuncio, index) => (
+              <motion.div
+                key={anuncio.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                    <img
+                      src={anuncio.imagem_preview_url || anuncio.imagens?.[0] || "https://alpha-se.com.br/img/padrao.jpg"}
+                      alt={anuncio.titulo}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-3 left-3">
+                      <Badge className={`${getCategoryColor(anuncio.categoria)} text-xs`}>
+                        {subcategoryLabels[anuncio.subcategoria] || categoryLabels[anuncio.categoria]}
+                      </Badge>
                     </div>
+                    <div className="absolute top-3 right-3">
+                      {getUserTypeBadge(anuncio)}
+                    </div>
+                  </div>
 
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
-                        {anuncio.titulo}
-                      </h3>
-
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {anuncio.descricao}
-                      </p>
-
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-2xl font-bold text-green-600">
-                          {anuncio.preco ? formatPrice(anuncio.preco) : "Preço a combinar"}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500 truncate">
-                          {anuncio.nickname || anuncio.nome_anunciante}
-                        </span>
-                        <Link to={createPageUrl(`AnuncioDetalhes?id=${anuncio.id}`)}>
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Ver Mais
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
+                      {anuncio.titulo}
+                    </h3>
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      {anuncio.descricao}
+                    </p>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-2xl font-bold text-green-600">
+                        {anuncio.preco ? formatPrice(anuncio.preco) : "Preço a combinar"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500 truncate">
+                        {anuncio.nickname || anuncio.nome_anunciante}
+                      </span>
+                      <Link to={createPageUrl(`AnuncioDetalhes?id=${anuncio.id}`)}>
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                          <ExternalLink className="w-4 h-4 mr-1" />
+                          Ver Mais
+                        </Button>
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
     </div>

@@ -114,16 +114,18 @@ export default function FeaturedAds({ anuncios, loading, user }) {
             <p className="text-gray-600 mb-6">
               Seja o primeiro a anunciar ou volte em breve para ver as novidades.
             </p>
-            <Link to={createPageUrl("CriarAnuncio")}>
-              <Button className="bg-green-600 hover:bg-green-700">
-                Criar Primeiro Anúncio
-              </Button>
-            </Link>
+            {user && (
+              <Link to={createPageUrl("CriarAnuncio")}>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  Criar Primeiro Anúncio
+                </Button>
+              </Link>
+            )}
           </div>
         ) : (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {anuncios.map((anuncio, index) => (
+              {anuncios.filter(anuncio => anuncio.id !== "mock1").map((anuncio, index) => (
                 <motion.div
                   key={anuncio.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -178,7 +180,7 @@ export default function FeaturedAds({ anuncios, loading, user }) {
 
                       <div className="flex justify-between items-center mb-3">
                         <span className="text-2xl font-bold text-green-600">
-                          {formatPrice(anuncio.preco)}
+                          {anuncio.preco > 0 ? formatPrice(anuncio.preco) : "Consulte"}
                         </span>
                       </div>
 
@@ -199,13 +201,15 @@ export default function FeaturedAds({ anuncios, loading, user }) {
               ))}
             </div>
 
-            <div className="text-center">
-              <Link to={createPageUrl("Anuncios")}>
-                <Button variant="outline" size="lg">
-                  Ver Todos os Anúncios
-                </Button>
-              </Link>
-            </div>
+            {anuncios.some(a => a.id !== "mock1") && (
+              <div className="text-center">
+                <Link to={createPageUrl("Anuncios")}>
+                  <Button variant="outline" size="lg">
+                    Ver Todos os Anúncios
+                  </Button>
+                </Link>
+              </div>
+            )}
           </>
         )}
       </div>

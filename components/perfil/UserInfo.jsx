@@ -124,7 +124,8 @@ export default function UserInfo({ user, onUpdate }) {
     setUploadingImage(true);
     setMessage({ type: '', text: '' });
     try {
-      const { file_url } = await UploadFile({ file });
+      // Adicionado o parâmetro is_public: true
+      const { file_url } = await UploadFile({ file, is_public: true });
       await onUpdate({ profile_picture_url: file_url });
       setFormData(prev => ({ ...prev, profile_picture_url: file_url }));
       displayMessage('success', "Foto de perfil atualizada com sucesso!");

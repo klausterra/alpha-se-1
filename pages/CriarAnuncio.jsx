@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { categories, categoryLabels, subcategoryLabels } from "@/components/anuncios/AnuncioCategories";
+
 
 export default function CriarAnuncio() {
   const navigate = useNavigate();
@@ -31,58 +33,6 @@ export default function CriarAnuncio() {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const categories = {
-    imoveis: ["venda_casa", "venda_apto", "venda_lote", "aluguel_casa", "aluguel_apto", "aluguel_lote"],
-    veiculos: ["carros", "motos", "outros_veiculos"],
-    para_casa: ["moveis", "eletrodomesticos", "decoracao"],
-    servicos: ["reformas_reparos", "aulas_cursos", "saude_bem_estar", "eventos", "outros_servicos"],
-    eletronicos: ["celulares", "computadores", "outros_eletronicos"],
-    moda_beleza: ["roupas", "acessorios", "cosmeticos"],
-    bebes_criancas: ["roupas_bebes", "brinquedos", "carrinhos_bebe", "moveis_infantis", "livros_infantis", "artigos_bebe"]
-  };
-
-  const categoryLabels = {
-    imoveis: "Imóveis",
-    veiculos: "Veículos",
-    para_casa: "Para Casa",
-    servicos: "Serviços",
-    eletronicos: "Eletrônicos",
-    moda_beleza: "Moda e Beleza",
-    bebes_criancas: "Bebês e Crianças"
-  };
-
-  const subcategoryLabels = {
-    venda_casa: "Casa para Venda",
-    venda_apto: "Apartamento para Venda",
-    venda_lote: "Lote para Venda",
-    aluguel_casa: "Casa para Aluguel",
-    aluguel_apto: "Apartamento para Aluguel",
-    aluguel_lote: "Lote para Aluguel",
-    carros: "Carros",
-    motos: "Motos",
-    outros_veiculos: "Outros Veículos",
-    moveis: "Móveis",
-    eletrodomesticos: "Eletrodomésticos",
-    decoracao: "Decoração",
-    reformas_reparos: "Reformas e Reparos",
-    aulas_cursos: "Aulas e Cursos",
-    saude_bem_estar: "Saúde e Bem-estar",
-    eventos: "Eventos",
-    outros_servicos: "Outros Serviços",
-    celulares: "Celulares",
-    computadores: "Computadores",
-    outros_eletronicos: "Outros Eletrônicos",
-    roupas: "Roupas",
-    acessorios: "Acessórios",
-    cosmeticos: "Cosméticos",
-    roupas_bebes: "Roupas de Bebê",
-    brinquedos: "Brinquedos",
-    carrinhos_bebe: "Carrinhos de Bebê",
-    moveis_infantis: "Móveis Infantis",
-    livros_infantis: "Livros Infantis",
-    artigos_bebe: "Artigos para Bebê"
-  };
 
   useEffect(() => {
     loadUser();
@@ -148,7 +98,8 @@ export default function CriarAnuncio() {
 
     setUploadingImages(true);
     try {
-      const uploadPromises = Array.from(files).map(file => UploadFile({ file }));
+      // Adicionado o parâmetro is_public: true
+      const uploadPromises = Array.from(files).map(file => UploadFile({ file, is_public: true }));
       const results = await Promise.all(uploadPromises);
       const imageUrls = results.map(result => result.file_url);
       
@@ -383,10 +334,19 @@ export default function CriarAnuncio() {
                         id="image-upload"
                       />
                       <label htmlFor="image-upload" className="cursor-pointer">
-                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-600">
-                          {uploadingImages ? "Fazendo upload..." : "Clique para adicionar imagens"}
-                        </p>
+                        {uploadingImages ? (
+                          <span className="flex items-center justify-center text-gray-600">
+                            <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400 mr-2"></span>
+                            Fazendo upload...
+                          </span>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-gray-600">
+                              Clique para adicionar imagens
+                            </p>
+                          </>
+                        )}
                       </label>
                     </div>
                   )}

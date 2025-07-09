@@ -30,6 +30,11 @@ export default function UserAds({ anuncios, onUpdate, onDelete }) {
   const getStatusLabel = (status) => ({ pending: "Pendente", active: "Ativo", expired: "Expirado", rejected: "Rejeitado" }[status] || status);
   const getStatusColor = (status) => ({ pending: "bg-yellow-100 text-yellow-800", active: "bg-green-100 text-green-800", expired: "bg-gray-100", rejected: "bg-red-100 text-red-800" }[status] || "bg-gray-100");
 
+  const handleDelete = async (adId) => {
+    await onDelete(adId);
+    // Não redireciona - permanece na página de anúncios
+  };
+
   return (
     <>
       <Card>
@@ -93,7 +98,7 @@ export default function UserAds({ anuncios, onUpdate, onDelete }) {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => onDelete(anuncio.id)}>Excluir</AlertDialogAction>
+                          <AlertDialogAction onClick={() => handleDelete(anuncio.id)}>Excluir</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

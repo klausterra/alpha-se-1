@@ -11,5 +11,9 @@ export const sendWelcomeEmail = base44.functions.sendWelcomeEmail;
 
 export const getPublicAnuncios = base44.functions.getPublicAnuncios;
 
-export const anuncioPreview = base44.functions.anuncioPreview;
+export const imageProxy = base44.functions.imageProxy;
+
+export const proxyImage = base44.functions.proxyImage;
+
+export const gerarPreviewAnuncio = base44.functions.gerarPreviewAnuncio;
 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, ZoomIn, Image as ImageIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -119,6 +120,7 @@ export default function ImageGallery({ images }) {
             src={currentImage}
             alt={`Imagem ${imageIndex + 1} - Ampliada`}
             className="max-w-full max-h-full object-contain"
+            onClick={() => setIsZoomed(false)} 
           />
         </div>
       )}

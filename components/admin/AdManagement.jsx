@@ -44,6 +44,12 @@ export default function AdManagement({ anuncios, onAdAction }) {
     return labels[categoria] || categoria;
   };
 
+  const handleDelete = async (adId) => {
+    if (window.confirm('Tem certeza que deseja excluir este anúncio permanentemente?')) {
+      await onAdAction(adId, 'delete');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -152,6 +158,15 @@ export default function AdManagement({ anuncios, onAdAction }) {
                       </Button>
                     </>
                   )}
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => handleDelete(anuncio.id)}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    <XCircle className="w-4 h-4 mr-1" />
+                    Excluir
+                  </Button>
                 </div>
               </div>
             ))}
